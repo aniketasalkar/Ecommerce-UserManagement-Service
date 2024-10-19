@@ -5,6 +5,8 @@ import com.example.usermanagementservice.models.RequestStatus;
 import com.example.usermanagementservice.models.TokenState;
 import com.example.usermanagementservice.models.User;
 import com.example.usermanagementservice.services.IAuthService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +49,7 @@ public class UserAuthController {
         headers.add(HttpHeaders.SET_COOKIE, accessToken);
         headers.add(HttpHeaders.SET_COOKIE2, refreshToken);
 //        headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
+//        headers.add(HttpHeaders.);
 
         LoginResponseDto loginResponseDto = new LoginResponseDto();
         loginResponseDto.setRequestStatus(RequestStatus.SUCCESS);
@@ -73,6 +76,42 @@ public class UserAuthController {
         }
 
     }
+
+    @DeleteMapping("/{email}/logout")
+    public ResponseEntity<LogOutResponseDto> logoutUser (@RequestHeader("Set-Cookie") String authHeader,
+                                                         @PathVariable String email,
+                                                         HttpServletResponse httpServletResponse) {
+        try {
+            Boolean isLoggedOut = authService.logout(email, authHeader);
+
+            if (isLoggedOut) {
+                httpServletResponse.setHeader("Set-Cookie", "");
+                httpServletResponse.setHeader("Set-Cookie2", "");
+//                clearCookies(httpServletResponse);
+            }
+            LogOutResponseDto logOutResponseDto = new LogOutResponseDto();
+            logOutResponseDto.setRequestStatus(RequestStatus.SUCCESS);
+
+            return new ResponseEntity<>(logOutResponseDto, HttpStatus.OK);
+        } catch (Exception exception) {
+            throw exception;
+        }
+    }
+
+//    private void clearCookies(HttpServletResponse response) {
+//        Cookie cookie = new Cookie("access_token", null);
+//        cookie.setPath("/"); // Set the path to match the cookie path
+//        cookie.setHttpOnly(true); // Make it HTTP only
+//        cookie.setMaxAge(0); // Set cookie age to 0 to delete it
+//        response.addCookie(cookie);
+//
+//        // Repeat for refresh token or any other cookies you want to clear
+//        Cookie refreshCookie = new Cookie("refresh_token", null);
+//        refreshCookie.setPath("/");
+//        refreshCookie.setHttpOnly(true);
+//        refreshCookie.setMaxAge(0);
+//        response.addCookie(refreshCookie);
+//    }
 
     private User from (UserRequestDto userRequestDto) {
         User user = new User();

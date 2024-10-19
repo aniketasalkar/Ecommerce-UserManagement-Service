@@ -10,4 +10,5 @@ public interface IAuthService {
     User signup(User user);
     String login(String email, String password);
     Pair<TokenState, String> validateAndRefreshToken(String email, ValidateAndRefreshTokenRequestDto validateAndRefreshTokenRequestDto);
+    Boolean logout(String email, String token);
 }

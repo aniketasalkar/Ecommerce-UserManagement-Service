@@ -1,10 +1,7 @@
 package com.example.usermanagementservice.services;
 
 import com.example.usermanagementservice.dtos.ValidateAndRefreshTokenRequestDto;
-import com.example.usermanagementservice.exceptions.BadCredentialsException;
-import com.example.usermanagementservice.exceptions.InvalidTokenException;
-import com.example.usermanagementservice.exceptions.UserAlreadyExistsException;
-import com.example.usermanagementservice.exceptions.UserNotFoundException;
+import com.example.usermanagementservice.exceptions.*;
 import com.example.usermanagementservice.models.*;
 import com.example.usermanagementservice.repository.SessionRepository;
 import com.example.usermanagementservice.repository.UserRepository;
@@ -90,10 +87,10 @@ public class AuthService implements IAuthService {
 
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        Session session = sessionRepository.findSessionByAccessTokenAndRefreshToken(
+        Session session = sessionRepository.findSessionByRefreshTokenAndAccessTokenAndSessionState(
+                validateAndRefreshTokenRequestDto.getRefreshToken(),
                 validateAndRefreshTokenRequestDto.getAccessToken(),
-                validateAndRefreshTokenRequestDto.getRefreshToken()
-//                SessionState.ACTIVE
+                SessionState.ACTIVE
                 ).orElseThrow(() -> new InvalidTokenException("Invalid token"));
 
         if (jwtUtils.validateToken("RefreshToken", session.getRefreshToken(), user)) {
@@ -114,5 +111,24 @@ public class AuthService implements IAuthService {
         }
 
         return response;
+    }
+
+    @Override
+    public Boolean logout(String email, String token) {
+        User user = userRepository.findByEmail(email).orElseThrow(() ->
+                new UserNotFoundException("User not found"));
+
+        Session session = sessionRepository.findSessionByAccessTokenAndUserId(token, user.getId()).orElseThrow(() ->
+                new InvalidTokenException("Invalid token"));
+
+        if (session.getSessionState().equals(SessionState.INACTIVE)) {
+            throw new NoActiveSessionFoundException("No active session found with found token");
+        }
+
+        session.setSessionState(SessionState.INACTIVE);
+        session.setUpdatedAt(new Date());
+        sessionRepository.save(session);
+
+        return true;
     }
 }

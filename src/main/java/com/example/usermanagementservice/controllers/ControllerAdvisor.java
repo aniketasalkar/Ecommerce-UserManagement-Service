@@ -79,4 +79,10 @@ public class ControllerAdvisor extends ResponseEntityExceptionHandler {
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ex.getMessage(), RequestStatus.FAILURE);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(NoActiveSessionFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoActiveSessionFoundException(NoActiveSessionFoundException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage(), RequestStatus.FAILURE);
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
 }
