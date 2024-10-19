@@ -1,23 +1,21 @@
 package com.example.usermanagementservice.controllers;
 
-import com.example.usermanagementservice.dtos.LoginRequestDto;
-import com.example.usermanagementservice.dtos.LoginResponseDto;
-import com.example.usermanagementservice.dtos.UserRequestDto;
-import com.example.usermanagementservice.dtos.UserResponseDto;
+import com.example.usermanagementservice.dtos.*;
 import com.example.usermanagementservice.models.RequestStatus;
+import com.example.usermanagementservice.models.TokenState;
 import com.example.usermanagementservice.models.User;
 import com.example.usermanagementservice.services.IAuthService;
 import jakarta.validation.Valid;
+import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -48,11 +46,32 @@ public class UserAuthController {
         MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
         headers.add(HttpHeaders.SET_COOKIE, accessToken);
         headers.add(HttpHeaders.SET_COOKIE2, refreshToken);
+//        headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
 
         LoginResponseDto loginResponseDto = new LoginResponseDto();
         loginResponseDto.setRequestStatus(RequestStatus.SUCCESS);
 
         return new ResponseEntity<>(loginResponseDto, headers, HttpStatus.OK);
+    }
+
+
+//    To Do
+    @PostMapping("/{email}/validateAndRefreshToken")
+    public ResponseEntity<ValidateAndRefreshTokenResponseDto> validateAndRefreshToken(@PathVariable String email, @RequestBody @Valid ValidateAndRefreshTokenRequestDto validateAndRefreshTokenRequestDto) {
+        try {
+            Pair<TokenState, String> tokenValidity = authService.validateAndRefreshToken(email, validateAndRefreshTokenRequestDto);
+
+            ValidateAndRefreshTokenResponseDto validateAndRefreshTokenResponseDto = new ValidateAndRefreshTokenResponseDto();
+            validateAndRefreshTokenResponseDto.setTokenState(tokenValidity.a);
+            validateAndRefreshTokenResponseDto.setAccessToken(tokenValidity.b);
+            validateAndRefreshTokenResponseDto.setRefreshToken(validateAndRefreshTokenRequestDto.getRefreshToken());
+            validateAndRefreshTokenResponseDto.setRequestStatus(RequestStatus.SUCCESS);
+
+            return new ResponseEntity<>(validateAndRefreshTokenResponseDto, HttpStatus.OK);
+        } catch (Exception exception) {
+            throw exception;
+        }
+
     }
 
     private User from (UserRequestDto userRequestDto) {

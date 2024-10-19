@@ -1,14 +1,15 @@
 package com.example.usermanagementservice.services;
 
+import com.example.usermanagementservice.dtos.ValidateAndRefreshTokenRequestDto;
 import com.example.usermanagementservice.exceptions.BadCredentialsException;
+import com.example.usermanagementservice.exceptions.InvalidTokenException;
 import com.example.usermanagementservice.exceptions.UserAlreadyExistsException;
 import com.example.usermanagementservice.exceptions.UserNotFoundException;
-import com.example.usermanagementservice.models.Session;
-import com.example.usermanagementservice.models.SessionState;
-import com.example.usermanagementservice.models.User;
+import com.example.usermanagementservice.models.*;
 import com.example.usermanagementservice.repository.SessionRepository;
 import com.example.usermanagementservice.repository.UserRepository;
 import com.example.usermanagementservice.utils.JwtUtils;
+import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -81,5 +82,37 @@ public class AuthService implements IAuthService {
 
 
         return accessToken + ":" + refreshToken;
+    }
+
+    @Override
+    public Pair<TokenState, String> validateAndRefreshToken(String email, ValidateAndRefreshTokenRequestDto validateAndRefreshTokenRequestDto) {
+        Pair<TokenState, String> response = new Pair<>(TokenState.ACTIVE, validateAndRefreshTokenRequestDto.getAccessToken());
+
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        Session session = sessionRepository.findSessionByAccessTokenAndRefreshToken(
+                validateAndRefreshTokenRequestDto.getAccessToken(),
+                validateAndRefreshTokenRequestDto.getRefreshToken()
+//                SessionState.ACTIVE
+                ).orElseThrow(() -> new InvalidTokenException("Invalid token"));
+
+        if (jwtUtils.validateToken("RefreshToken", session.getRefreshToken(), user)) {
+            if (!jwtUtils.validateToken("AccessToken", session.getAccessToken(), user)) {
+                String newAccessToken = jwtUtils.generateAccessToken(user);
+                session.setAccessToken(newAccessToken);
+                session.setUpdatedAt(new Date());
+
+                sessionRepository.save(session);
+                response = new Pair<>(TokenState.REFRESHED, newAccessToken);
+            }
+        } else {
+            session.setSessionState(SessionState.INACTIVE);
+            session.setUpdatedAt(new Date());
+
+            sessionRepository.save(session);
+            response = new Pair<>(TokenState.EXPIRED, "");
+        }
+
+        return response;
     }
 }
