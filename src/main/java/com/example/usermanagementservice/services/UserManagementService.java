@@ -12,6 +12,7 @@ import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -74,5 +75,17 @@ public class UserManagementService implements IUserManagementService {
         user.setUpdatedAt(new Date());
 
         return userRepository.save(user);
+    }
+
+    @Override
+    public User getUserDetails(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User Not Found"));
+
+        return user;
+    }
+
+    @Override
+    public List<User> getAllUsers() {
+        return userRepository.findAllByOrderByIdDesc();
     }
 }

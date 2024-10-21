@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -47,7 +49,33 @@ public class UserManagementController {
         } catch (Exception exception) {
             throw  exception;
         }
+    }
 
+    @GetMapping("/users/{email}/userDetails")
+    public ResponseEntity<UserResponseDto> getUser(@PathVariable String email) {
+        try {
+            User user = userManagementService.getUserDetails(email);
+
+            return new ResponseEntity<>(toDto(user ), HttpStatus.OK);
+        } catch (Exception exception) {
+            throw  exception;
+        }
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
+        try {
+            List<User> users = userManagementService.getAllUsers();
+
+            List<UserResponseDto> userResponseDtos = new ArrayList<>();
+            for (User user : users) {
+                userResponseDtos.add(toDto(user));
+            }
+
+            return new ResponseEntity<>(userResponseDtos, HttpStatus.OK);
+        } catch (Exception exception) {
+            throw  exception;
+        }
     }
 
     private void validatePatchRequest(Map<String, Object> patchRequest) {
