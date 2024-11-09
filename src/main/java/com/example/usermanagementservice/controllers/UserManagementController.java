@@ -2,6 +2,7 @@ package com.example.usermanagementservice.controllers;
 
 import com.example.usermanagementservice.dtos.UpdatePasswordRequestDto;
 import com.example.usermanagementservice.dtos.UpdatePasswordResponseDto;
+import com.example.usermanagementservice.dtos.UserRequestDto;
 import com.example.usermanagementservice.dtos.UserResponseDto;
 import com.example.usermanagementservice.exceptions.FieldNotModifiableException;
 import com.example.usermanagementservice.exceptions.InvalidDataException;
@@ -23,6 +24,17 @@ public class UserManagementController {
 
     @Autowired
     private IUserManagementService userManagementService;
+
+    @PostMapping("/createUser")
+    public ResponseEntity<UserResponseDto> createUser(@RequestBody UserRequestDto userRequestDto) {
+        try {
+            User user = userManagementService.createUser(from(userRequestDto));
+
+            return new ResponseEntity<>(toDto(user), HttpStatus.CREATED);
+        } catch (Exception exception) {
+            throw exception;
+        }
+    }
 
     @PostMapping("/users/{email}/updatePassword")
     public ResponseEntity<UpdatePasswordResponseDto> updatePassword(@PathVariable String email , @RequestBody UpdatePasswordRequestDto updatePasswordRequestDto) {
@@ -133,5 +145,15 @@ public class UserManagementController {
         userResponseDto.setRequestStatus(RequestStatus.SUCCESS);
 
         return userResponseDto;
+    }
+
+    private User from (UserRequestDto userRequestDto) {
+        User user = new User();
+        user.setFirstName(userRequestDto.getFirstName());
+        user.setLastName(userRequestDto.getLastName());
+        user.setEmail(userRequestDto.getEmail());
+        user.setPhoneNumber(userRequestDto.getPhoneNumber());
+
+        return user;
     }
 }

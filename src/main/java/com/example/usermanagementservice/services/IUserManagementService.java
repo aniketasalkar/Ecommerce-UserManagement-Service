@@ -13,4 +13,5 @@ public interface IUserManagementService {
     User updateUserInformation(String email, Map<String, Object> userInformation);
     User getUserDetails(String email);
     List<User> getAllUsers();
+    User createUser(User user);
 }

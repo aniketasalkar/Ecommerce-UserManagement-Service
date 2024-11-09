@@ -11,10 +11,10 @@ public class UserRequestDto {
     @NotEmpty(message = "Email cannot be null")
     private String email;
 
-    @Size(min = 8, max = 16)
-//    @Pattern(regexp = "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]+$",
-//            message = "Password must contain at least one uppercase letter, one numeric value, and one special character.")
-    private String password;
+//    @Size(min = 8, max = 16)
+////    @Pattern(regexp = "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]+$",
+////            message = "Password must contain at least one uppercase letter, one numeric value, and one special character.")
+//    private String password;
 
     @NotEmpty(message = "FirstName cannot be empty")
     private String firstName;

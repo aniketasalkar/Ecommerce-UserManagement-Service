@@ -6,7 +6,6 @@ import com.example.usermanagementservice.models.RequestStatus;
 import com.example.usermanagementservice.models.User;
 import com.example.usermanagementservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ReflectionUtils;
 
@@ -22,32 +21,29 @@ public class UserManagementService implements IUserManagementService {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
-
     @Override
     public RequestStatus updatePassword(String email, UpdatePasswordRequestDto updatePasswordRequestDto) {
 
-        if (!userRepository.findByEmail(email).isPresent()) {
-            throw new UserNotFoundException("User Not Found");
-        }
-        User user = userRepository.findByEmail(email).get();
-
-        if (!bCryptPasswordEncoder.matches(updatePasswordRequestDto.getOldPassword(), user.getPassword())) {
-            throw new PasswordDoesNotMatchException("Old Password Not Matched");
-        }
-
-        if (bCryptPasswordEncoder.matches(updatePasswordRequestDto.getNewPassword(), user.getPassword())) {
-            throw new UpdatePasswordException("New password should not be same as old password");
-        }
-
-        if (!updatePasswordRequestDto.getNewPassword().equals(updatePasswordRequestDto.getConfirmPassword())) {
-            throw new PasswordDoesNotMatchException("Confirm Password Not Matched with new password");
-        }
-
-        user.setPassword(bCryptPasswordEncoder.encode(updatePasswordRequestDto.getNewPassword()));
-        user.setUpdatedAt(new Date());
-        userRepository.save(user);
+//        if (!userRepository.findByEmail(email).isPresent()) {
+//            throw new UserNotFoundException("User Not Found");
+//        }
+//        User user = userRepository.findByEmail(email).get();
+//
+//        if (!bCryptPasswordEncoder.matches(updatePasswordRequestDto.getOldPassword(), user.getPassword())) {
+//            throw new PasswordDoesNotMatchException("Old Password Not Matched");
+//        }
+//
+//        if (bCryptPasswordEncoder.matches(updatePasswordRequestDto.getNewPassword(), user.getPassword())) {
+//            throw new UpdatePasswordException("New password should not be same as old password");
+//        }
+//
+//        if (!updatePasswordRequestDto.getNewPassword().equals(updatePasswordRequestDto.getConfirmPassword())) {
+//            throw new PasswordDoesNotMatchException("Confirm Password Not Matched with new password");
+//        }
+//
+////        user.setPassword(bCryptPasswordEncoder.encode(updatePasswordRequestDto.getNewPassword()));
+//        user.setUpdatedAt(new Date());
+//        userRepository.save(user);
 
         return RequestStatus.SUCCESS;
     }
@@ -87,5 +83,18 @@ public class UserManagementService implements IUserManagementService {
     @Override
     public List<User> getAllUsers() {
         return userRepository.findAllByOrderByIdDesc();
+    }
+
+    @Override
+    public User createUser(User user) {
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            throw new UserAlreadyExistsException("User already exists");
+        }
+
+        Date now = new Date();
+        user.setCreatedAt(now);
+        user.setUpdatedAt(now);
+
+        return userRepository.save(user);
     }
 }
