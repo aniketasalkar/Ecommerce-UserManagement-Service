@@ -90,6 +90,34 @@ public class UserManagementController {
         }
     }
 
+    @PostMapping("/send-welcome-email")
+    public ResponseEntity<RequestStatus> sendWelcomeEmail(@RequestBody String email) {
+        try {
+            Boolean status = userManagementService.sendWelcomeEmail(email);
+            RequestStatus requestStatus;
+            if (status) {
+                requestStatus = RequestStatus.SUCCESS;
+                return new ResponseEntity<>(requestStatus, HttpStatus.OK);
+            } else {
+                requestStatus = RequestStatus.FAILURE;
+                return new ResponseEntity<>(requestStatus, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+
+        } catch (Exception exception) {
+            throw exception;
+        }
+    }
+
+    @DeleteMapping("/delete/user/{email}")
+    public ResponseEntity<RequestStatus> deleteUser(@PathVariable String email) {
+        try {
+            userManagementService.deleteUser(email);
+            return new ResponseEntity<>(RequestStatus.SUCCESS, HttpStatus.OK);
+        } catch (Exception exception) {
+            throw exception;
+        }
+    }
+
     private void validatePatchRequest(Map<String, Object> patchRequest) {
         for (Map.Entry<String, Object> entry : patchRequest.entrySet()) {
             String key = entry.getKey();

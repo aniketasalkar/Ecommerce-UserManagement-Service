@@ -1,6 +1,7 @@
 package com.example.usermanagementservice.dtos;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -22,6 +23,7 @@ public class UserRequestDto {
     @NotEmpty(message = "LastName cannot be empty")
     private String lastName;
 
+    @Min(value = 0, message = "phone number must be positive")
     @Size(min = 10, max = 10, message = "phone number cannot be empty")
 //    @Pattern(regexp = "^\\+?[0-9]{1,4}?[-.\\s]?\\(?[0-9]{1,3}?\\)?[-.\\s]?[0-9]{3,4}[-.\\s]?[0-9]{4}$",
 //            message = "Invalid phone number format.")

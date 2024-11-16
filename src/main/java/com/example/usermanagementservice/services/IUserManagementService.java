@@ -6,7 +6,6 @@ import com.example.usermanagementservice.models.User;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 public interface IUserManagementService {
     RequestStatus updatePassword(String email, UpdatePasswordRequestDto updatePasswordRequestDto);
@@ -14,4 +13,6 @@ public interface IUserManagementService {
     User getUserDetails(String email);
     List<User> getAllUsers();
     User createUser(User user);
+    Boolean sendWelcomeEmail(String email);
+    void deleteUser(String email);
 }
