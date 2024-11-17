@@ -1,14 +1,12 @@
 package com.example.usermanagementservice.models;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.annotations.Fetch;
 
 import java.util.List;
+import java.util.Set;
 
 @Data
 @Entity
@@ -28,7 +26,7 @@ public class User extends BaseModel {
     @Column(unique = true, nullable = false)
     private String phoneNumber;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    private List<Address> addresses;
+    @ManyToMany(fetch = FetchType.LAZY)
+    private Set<Address> addresses;
 //    private List<UserRoles> roles;
 }
