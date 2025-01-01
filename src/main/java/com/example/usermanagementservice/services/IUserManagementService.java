@@ -15,4 +15,5 @@ public interface IUserManagementService {
     User createUser(User user);
     Boolean sendWelcomeEmail(String email);
     void deleteUser(String email);
+    User getUserById(long userId);
 }

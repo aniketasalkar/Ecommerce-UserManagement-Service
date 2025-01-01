@@ -74,6 +74,17 @@ public class UserManagementController {
         }
     }
 
+    @GetMapping("/users/{userId}")
+    public ResponseEntity<UserResponseDto> getUserById(@PathVariable long userId) {
+        try {
+            User user = userManagementService.getUserById(userId);
+
+            return new ResponseEntity<>(toDto(user ), HttpStatus.OK);
+        } catch (Exception exception) {
+            throw  exception;
+        }
+    }
+
     @GetMapping("/users")
     public ResponseEntity<List<UserResponseDto>> getAllUsers() {
         try {

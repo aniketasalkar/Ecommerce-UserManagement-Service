@@ -174,4 +174,11 @@ public class UserManagementService implements IUserManagementService {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("User Not Found"));
         userRepository.deleteByEmail(user.getEmail());
     }
+
+    @Override
+    public User getUserById(long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User Not Found"));
+
+        return user;
+    }
 }
