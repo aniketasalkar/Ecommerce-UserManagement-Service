@@ -3,8 +3,10 @@ package com.example.usermanagementservice.controllers;
 import com.example.usermanagementservice.dtos.AddressDto;
 import com.example.usermanagementservice.dtos.AddressRequestDto;
 import com.example.usermanagementservice.dtos.AddressResponseDto;
+import com.example.usermanagementservice.dtos.UpdateAddressDto;
 import com.example.usermanagementservice.models.Address;
 import com.example.usermanagementservice.services.AddressService;
+import com.example.usermanagementservice.utils.IDtoMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,14 +22,17 @@ public class AddressController {
     @Autowired
     AddressService addressService;
 
+    @Autowired
+    IDtoMapper dtoMapper;
+
     @PostMapping("/{userId}")
     public ResponseEntity<AddressResponseDto> createAddress(@PathVariable Long userId, @RequestBody AddressRequestDto addressRequestDto) {
         try {
-            List<Address> addresses = addressService.addAddress(from(addressRequestDto), userId);
+            List<Address> addresses = addressService.addAddress(dtoMapper.toAddress(addressRequestDto), userId);
 
             AddressResponseDto addressResponseDto = new AddressResponseDto();
             addressResponseDto.setUserId(userId);
-            addressResponseDto.setAddresses(from(addresses));
+            addressResponseDto.setAddresses(dtoMapper.toAddressDtoList(addresses, userId));
 
             return new ResponseEntity<>(addressResponseDto, HttpStatus.CREATED);
         } catch (Exception exception) {
@@ -35,35 +40,42 @@ public class AddressController {
         }
     }
 
-    private Address from (AddressRequestDto addressRequestDto) {
-        Address address = new Address();
-        address.setName(addressRequestDto.getName());
-        address.setCity(addressRequestDto.getCity());
-        address.setState(addressRequestDto.getState());
-        address.setCountry(addressRequestDto.getCountry());
-        address.setZip(addressRequestDto.getZip());
-        address.setStreet(addressRequestDto.getStreet());
-        address.setExtaNotes(addressRequestDto.getExtaNotes());
+    @GetMapping("/default_address/{userId}")
+    public ResponseEntity<AddressDto> getDefaultAddress(@PathVariable Long userId) {
+        try {
+            Address address = addressService.getDefaultAddress(userId);
+            AddressDto addressDto = new AddressDto();
 
-        return address;
+            return new ResponseEntity<>(dtoMapper.toAddressDto(address), HttpStatus.OK);
+        } catch (Exception exception) {
+            throw exception;
+        }
     }
 
-    private List<AddressDto> from (List<Address> addresses) {
-        List<AddressDto> addressResponseDto = new ArrayList<>();
-        for (Address address : addresses) {
+    @PatchMapping("/update_default_address/{userId}")
+    public ResponseEntity<AddressDto> updateDefaultAddress(@PathVariable Long userId, @RequestBody UpdateAddressDto updateAddressDto) {
+        try {
+            Address address = addressService.updateDefaultAddress(updateAddressDto.getAddressId(), userId);
             AddressDto addressDto = new AddressDto();
-            addressDto.setName(address.getName());
-            addressDto.setCity(address.getCity());
-            addressDto.setState(address.getState());
-            addressDto.setCountry(address.getCountry());
-            addressDto.setZip(address.getZip());
-            addressDto.setStreet(address.getStreet());
-            addressDto.setExtaNotes(address.getExtaNotes());
-            addressDto.setDeliveryAddress(address.getDeliveryAddress());
 
-            addressResponseDto.add(addressDto);
+            return new ResponseEntity<>(dtoMapper.toAddressDto(address), HttpStatus.OK);
+        } catch (Exception exception) {
+            throw exception;
         }
+    }
 
-        return addressResponseDto;
+    @GetMapping("/{userId}/all")
+    public ResponseEntity<AddressResponseDto> getAllAddresses( @PathVariable Long userId) {
+        try {
+            List<Address> addresses = addressService.getAddressesByUserId(userId);
+
+            AddressResponseDto addressResponseDto = new AddressResponseDto();
+            addressResponseDto.setUserId(userId);
+            addressResponseDto.setAddresses(dtoMapper.toAddressDtoList(addresses, userId));
+
+            return new ResponseEntity<>(addressResponseDto, HttpStatus.OK);
+        } catch (Exception exception) {
+            throw exception;
+        }
     }
 }
